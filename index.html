@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journey Timer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1c2c 0%, #4834d4 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(123, 67, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: rotateBg 30s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: clamp(20px, 4vw, 40px);
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: clamp(30px, 5vh, 60px);
+            background: linear-gradient(45deg, #fff, #a29bfe);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(162, 155, 254, 0.5));
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        .timer-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: clamp(15px, 3vw, 30px);
+            margin: clamp(15px, 2vh, 25px) 0;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2),
+                       inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: sectionFloat 4s ease-in-out infinite;
+            animation-delay: calc(var(--delay, 0) * 1s);
+        }
+
+        .timer-section:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3),
+                       inset 0 2px 2px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .timer {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            font-weight: 700;
+            margin: clamp(12px, 2vh, 20px) 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(8px, 2vw, 20px);
+            flex-wrap: wrap;
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: clamp(8px, 1.5vw, 20px);
+            border-radius: 12px;
+            min-width: 100px;
+            transition: transform 0.3s ease;
+        }
+
+        .time-unit:hover {
+            transform: translateY(-5px);
+        }
+
+        .time-value {
+            font-size: 1.2em;
+            background: linear-gradient(45deg, #a29bfe, #00c6ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(162, 155, 254, 0.3));
+        }
+
+        .time-label {
+            font-size: 0.25em;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .location-title {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            background: linear-gradient(45deg, #00c6ff, #a29bfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: clamp(15px, 3vh, 30px);
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            filter: drop-shadow(0 0 8px rgba(0, 198, 255, 0.3));
+        }
+
+        @keyframes titlePulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 15px rgba(162, 155, 254, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 25px rgba(162, 155, 254, 0.8));
+            }
+        }
+
+        @keyframes sectionFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes rotateBg {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .time-unit {
+                min-width: 100px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .timer {
+                gap: 15px;
+            }
+
+            .time-unit {
+                min-width: 90px;
+                padding: 12px;
+            }
+
+            .time-label {
+                font-size: 0.2em;
+                letter-spacing: 2px;
+            }
+        }
+
+        /* Photo Grid Styles */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            aspect-ratio: 9/16;
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner,
+        .flip-card:active .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .flip-card-front {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .flip-card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .flip-card-back {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            transform: rotateY(180deg);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            line-height: 1.5;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .photo-grid {
+                gap: 10px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Journey Timer</h1>
+
+        <!-- Bangalore Section -->
+        <div class="timer-section">
+            <div class="location-title">Time in Bangalore</div>
+            <div class="timer" id="timeElapsed">
+                <div class="time-unit">
+                    <span class="time-value" id="elapsedDays">0</span>
+                    <span class="time-label">Days</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-value" id="elapsedHours">0</span>
+                    <span class="time-label">Hours</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bangalore Photos -->
+        <div class="timer-section">
+            <div class="location-title">Bangalore Memories</div>
+            <div class="photo-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="bang1.jpg" alt="Bangalore Memory 1">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>Starting a new chapter in Bangalore's vibrant tech scene!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="bang2.jpg" alt="Bangalore Memory 2">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>Weekend adventures exploring the Garden City!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="bang3.jpg" alt="Bangalore Memory 3">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>Making new friends and creating lasting memories!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="bang4.jpg" alt="Bangalore Memory 4">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>Growing professionally and personally in this amazing city!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mumbai Timer Section (shown only when endDate is set) -->
+        <div class="timer-section" id="mumbaiTimer" style="display: none;">
+            <div class="location-title">Time until Mumbai</div>
+            <div class="timer" id="timeRemaining">
+                <div class="time-unit">
+                    <span class="time-value" id="remainingDays">0</span>
+                    <span class="time-label">Days</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-value" id="remainingHours">0</span>
+                    <span class="time-label">Hours</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mumbai Photos (shown only when endDate is set) -->
+        <div class="timer-section" id="mumbaiPhotos" style="display: none;">
+            <div class="location-title">Mumbai Memories</div>
+            <div class="photo-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="mum1.jpg" alt="Mumbai Memory 1">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>The city that never sleeps, always in my heart!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="mum2.jpg" alt="Mumbai Memory 2">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>Mumbai's monsoon magic and chai memories!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="mum3.jpg" alt="Mumbai Memory 3">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>The spirit of Mumbai, always inspiring!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="mum4.jpg" alt="Mumbai Memory 4">
+                        </div>
+                        <div class="flip-card-back">
+                            <p>Coming back to where it all began!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startDate = new Date('2025-10-29T15:30:00');
+        // Set your end date here in the format YYYY-MM-DD HH:MM:SS
+        // To remove the Mumbai countdown, comment out or remove the line below
+        // const endDate = null; // Set to null to hide Mumbai countdown, or set a date like: new Date('2026-01-15T12:00:00') -->
+        const endDate = new Date('2025-12-01T12:00:00')
+
+        function updateTimers() {
+            const now = new Date();
+            
+            // Calculate time elapsed
+            const elapsedTime = calculateTimeDifference(startDate, now);
+            document.getElementById('elapsedDays').textContent = elapsedTime.days;
+            document.getElementById('elapsedHours').textContent = elapsedTime.hours;
+
+            // Show/hide and update Mumbai sections based on endDate
+            const mumbaiTimerSection = document.getElementById('mumbaiTimer');
+            const mumbaiPhotoSection = document.getElementById('mumbaiPhotos');
+            if (!endDate) {
+                mumbaiTimerSection.style.display = 'none';
+                mumbaiPhotoSection.style.display = 'none';
+            } else {
+                mumbaiTimerSection.style.display = 'block';
+                mumbaiPhotoSection.style.display = 'block';
+                const remainingTime = calculateTimeDifference(now, endDate);
+                if (now > endDate) {
+                    document.getElementById('remainingDays').textContent = '0';
+                    document.getElementById('remainingHours').textContent = '0';
+                } else {
+                    document.getElementById('remainingDays').textContent = remainingTime.days;
+                    document.getElementById('remainingHours').textContent = remainingTime.hours;
+                }
+            }
+        }
+
+        function calculateTimeDifference(start, end) {
+            const difference = end - start;
+            return {
+                days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+            };
+        }
+
+        // Update timers every second
+        setInterval(updateTimers, 1000);
+        updateTimers(); // Initial update
+    </script>
+</body>
+</html>
